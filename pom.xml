@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>br.com.feedback</groupId>
+  <artifactId>feedback-platform</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+  <name>Plataforma de Feedback de Cursos (GCP serverless)</name>
+
+  <modules>
+    <module>common</module>
+    <module>receber-avaliacao</module>
+    <module>notificar-critico</module>
+    <module>gerar-relatorio-semanal</module>
+  </modules>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <gson.version>2.11.0</gson.version>
+    <hikari.version>5.1.0</hikari.version>
+    <postgres.version>42.7.4</postgres.version>
+    <cloudsql.socketfactory.version>1.21.0</cloudsql.socketfactory.version>
+    <pubsub.version>1.134.1</pubsub.version>
+    <functions.framework.version>1.1.0</functions.framework.version>
+    <cloudevents.version>2.5.0</cloudevents.version>
+    <flyway.version>10.20.1</flyway.version>
+    <junit.version>5.11.3</junit.version>
+    <testcontainers.version>1.20.3</testcontainers.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency><groupId>br.com.feedback</groupId><artifactId>common</artifactId><version>${project.version}</version></dependency>
+      <dependency><groupId>com.google.code.gson</groupId><artifactId>gson</artifactId><version>${gson.version}</version></dependency>
+      <dependency><groupId>com.zaxxer</groupId><artifactId>HikariCP</artifactId><version>${hikari.version}</version></dependency>
+      <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>${postgres.version}</version></dependency>
+      <dependency><groupId>com.google.cloud.sql</groupId><artifactId>postgres-socket-factory</artifactId><version>${cloudsql.socketfactory.version}</version></dependency>
+      <dependency><groupId>com.google.cloud</groupId><artifactId>google-cloud-pubsub</artifactId><version>${pubsub.version}</version></dependency>
+      <dependency><groupId>com.google.cloud.functions</groupId><artifactId>functions-framework-api</artifactId><version>${functions.framework.version}</version></dependency>
+      <dependency><groupId>io.cloudevents</groupId><artifactId>cloudevents-api</artifactId><version>${cloudevents.version}</version></dependency>
+      <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version></dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.5.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>3.5.1</version>
+        </plugin>
+        <!-- Gera um "uber jar" por função; o deploy na GCP usa esse jar diretamente -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>3.6.0</version>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals><goal>shade</goal></goals>
+              <configuration>
+                <createDependencyReducedPom>false</createDependencyReducedPom>
+                <finalName>${project.artifactId}</finalName>
+                <transformers>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                  <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <manifestEntries><Multi-Release>true</Multi-Release></manifestEntries>
+                  </transformer>
+                </transformers>
+                <filters>
+                  <filter>
+                    <artifact>*:*</artifact>
+                    <excludes>
+                      <exclude>META-INF/*.SF</exclude>
+                      <exclude>META-INF/*.DSA</exclude>
+                      <exclude>META-INF/*.RSA</exclude>
+                      <exclude>module-info.class</exclude>
+                    </excludes>
+                  </filter>
+                </filters>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

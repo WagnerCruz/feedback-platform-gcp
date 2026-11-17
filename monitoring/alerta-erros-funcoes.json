@@ -1,0 +1,16 @@
+{
+  "displayName": "Erros nas funções serverless",
+  "combiner": "OR",
+  "conditions": [{
+    "displayName": "Qualquer log de erro em 1 minuto",
+    "conditionThreshold": {
+      "filter": "metric.type=\"logging.googleapis.com/user/erros_funcoes\" AND resource.type=\"cloud_run_revision\"",
+      "comparison": "COMPARISON_GT",
+      "thresholdValue": 0,
+      "duration": "0s",
+      "aggregations": [{"alignmentPeriod": "60s", "perSeriesAligner": "ALIGN_SUM"}]
+    }
+  }],
+  "alertStrategy": {"autoClose": "1800s"},
+  "notificationChannels": [${CHANNELS_JSON}]
+}

@@ -1,0 +1,26 @@
+# Deploy automatizado (CI/CD): gatilho do Cloud Build no repositório, a cada push na branch main.
+# Requisitos: ver README, seção "Deploy automatizado".
+steps:
+  - id: testes-e-build
+    name: maven:3.9-eclipse-temurin-21
+    entrypoint: mvn
+    args: ['-B', 'clean', 'verify', '-DskipITs']
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    entrypoint: bash
+    env:
+      - 'PROJECT_ID=$PROJECT_ID'
+      - 'REGION=${_REGION}'
+      - 'ADMIN_EMAILS=${_ADMIN_EMAILS}'
+      - 'EMAIL_FROM=${_EMAIL_FROM}'
+      - 'SKIP_BUILD=1'
+    args: ['scripts/04-deploy.sh']
+
+substitutions:
+  _REGION: us-central1
+  _ADMIN_EMAILS: admin@exemplo.com
+  _EMAIL_FROM: noreply@exemplo.com
+
+options:
+  logging: CLOUD_LOGGING_ONLY

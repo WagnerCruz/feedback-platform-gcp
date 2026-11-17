@@ -1,0 +1,16 @@
+{
+  "displayName": "Mensagens críticas na dead-letter (e-mail de urgência não entregue)",
+  "combiner": "OR",
+  "conditions": [{
+    "displayName": "Mensagens não entregues no DLQ",
+    "conditionThreshold": {
+      "filter": "metric.type=\"pubsub.googleapis.com/subscription/num_undelivered_messages\" AND resource.type=\"pubsub_subscription\" AND resource.label.subscription_id=\"avaliacoes-criticas-dlq-sub\"",
+      "comparison": "COMPARISON_GT",
+      "thresholdValue": 0,
+      "duration": "0s",
+      "aggregations": [{"alignmentPeriod": "60s", "perSeriesAligner": "ALIGN_MAX"}]
+    }
+  }],
+  "alertStrategy": {"autoClose": "1800s"},
+  "notificationChannels": [${CHANNELS_JSON}]
+}

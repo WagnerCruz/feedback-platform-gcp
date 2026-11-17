@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: API de Avaliações de Cursos
+  version: 1.0.0
+  description: Recebe feedbacks dos estudantes. Avaliações críticas (nota 0–3) disparam e-mail aos administradores.
+servers:
+  - url: https://REGIAO-PROJETO.cloudfunctions.net  # use a URL exibida no fim do deploy
+paths:
+  /avaliacao:
+    post:
+      summary: Registra uma avaliação
+      security: [{ApiKeyAuth: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/NovaAvaliacao'}
+            example: {descricao: "Áudio inaudível nas aulas do módulo 3", nota: 1}
+      responses:
+        '201':
+          description: Avaliação registrada
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AvaliacaoCriada'}
+        '400': {description: "Entrada inválida (nota fora de 0–10, descrição vazia, JSON inválido)"}
+        '401': {description: Chave de API ausente ou inválida}
+        '405': {description: Método diferente de POST}
+        '500': {description: Erro interno}
+components:
+  securitySchemes:
+    ApiKeyAuth: {type: apiKey, in: header, name: X-API-Key}
+  schemas:
+    NovaAvaliacao:
+      type: object
+      required: [descricao, nota]
+      properties:
+        descricao: {type: string, maxLength: 2000}
+        nota: {type: integer, minimum: 0, maximum: 10}
+    AvaliacaoCriada:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        urgencia: {type: string, enum: [CRITICA, MEDIA, BAIXA]}
+        dataEnvio: {type: string, format: date-time}

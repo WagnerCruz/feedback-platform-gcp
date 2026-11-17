@@ -1,0 +1,16 @@
+{
+  "displayName": "Cloud SQL com CPU acima de 80%",
+  "combiner": "OR",
+  "conditions": [{
+    "displayName": "CPU > 80% por 5 minutos",
+    "conditionThreshold": {
+      "filter": "metric.type=\"cloudsql.googleapis.com/database/cpu/utilization\" AND resource.type=\"cloudsql_database\"",
+      "comparison": "COMPARISON_GT",
+      "thresholdValue": 0.8,
+      "duration": "300s",
+      "aggregations": [{"alignmentPeriod": "60s", "perSeriesAligner": "ALIGN_MEAN"}]
+    }
+  }],
+  "alertStrategy": {"autoClose": "1800s"},
+  "notificationChannels": [${CHANNELS_JSON}]
+}
